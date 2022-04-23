@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: BUSL-1.1
 
-pragma solidity ^0.8.4
+pragma solidity ^0.8.4;
 
-import "contracts/interfaces/IERC20.sol";
+import "OpenZeppelin/openzeppelin-contracts@4.5.0/contracts/interfaces/IERC20.sol";
 
 interface IAPWToken is IERC20 {
     /**

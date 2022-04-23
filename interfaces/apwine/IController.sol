@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: BUSL-1.1
 
-pragma solidity ^0.8.4
-import "contracts/interfaces/apwine/IFutureVault.sol";
-import "contracts/interfaces/apwine/IRegistry.sol";
+pragma solidity ^0.8.4;
+import "./IFutureVault.sol";
+import "./IRegistry.sol";
 
 interface IController {
     /* Events */

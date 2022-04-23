@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: BUSL-1.1
 
-pragma solidity ^0.8.4
+pragma solidity ^0.8.4;
 
-import "contracts/interfaces/apwine/tokens/IPT.sol";
-import "contracts/interfaces/apwine/IRegistry.sol";
-import "contracts/interfaces/apwine/IFutureWallet.sol";
+import "./tokens/IPT.sol";
+import "./IRegistry.sol";
+import "./IFutureWallet.sol";
 
 interface IFutureVault {
     /* Events */
