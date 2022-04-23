@@ -1,6 +1,6 @@
 import pytest
 
-from brownie import ZERO_ADDRESS, chain, accounts
+from brownie import ZERO_ADDRESS, chain, accounts, NotGonnaMakeIt, Contract
 from brownie_tokens import MintableForkToken
 
 
@@ -12,6 +12,14 @@ def DAI():
 
 
 
+# @pytest.fixture(scope="module")
+# def yReg():
+#     reg= Contract.from_etherscan("0x50c1a2eA0a861A967D9d0FFE2AE4012c2E053804")
+    
+#yearn registry 0x50c1a2eA0a861A967D9d0FFE2AE4012c2E053804
 @pytest.fixture(scope="module")
-def yVault(vault_address):
-    pass
+def NGMI():
+    n = NotGonnaMakeIt.deploy("0x50c1a2eA0a861A967D9d0FFE2AE4012c2E053804",{"from": accounts[0]})
+    return n
+    
+

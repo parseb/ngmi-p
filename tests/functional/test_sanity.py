@@ -1,6 +1,6 @@
 
 import pytest
-from brownie import accounts, Contract, ZERO_ADDRESS, chain
+from brownie import accounts, Contract, ZERO_ADDRESS, chain, NotGonnaMakeIt
 from brownie_tokens import ERC20, MintableForkToken
 
 
@@ -14,8 +14,9 @@ def test_mint_dai(DAI):
     assert DAI.balanceOf(accounts[0]) == 1_000 * 10 ** 18
     
 
-def hasOwner():
-    pytest.skip
+def test_hasOwner(NGMI):
+    o = NGMI.owner()
+    assert o == accounts[0]
 
 def deposits():
     pytest.skip
