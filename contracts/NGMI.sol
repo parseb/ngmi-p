@@ -109,10 +109,14 @@ contract NotGonnaMakeIt is Ownable, ReentrancyGuard, ERC721("NGMI FUDN", "NGMI")
 
 
 
+        IERC20(getWillByIssuer[_issuer].erc20).transfer(msg.sender,);)    
 
     }
 
 
+    function seal() public returns (bool) {
+        return true;
+    }
 
     ////View
 
