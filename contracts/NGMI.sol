@@ -10,8 +10,8 @@ import "OpenZeppelin/openzeppelin-contracts@4.5.0/contracts/token/ERC721/ERC721.
 contract NotGonnaMakeIt is Ownable, ReentrancyGuard, ERC721("NGMI FUDN", "NGMI") {
     
     IV2Registry yRegistry;
-    IVault yVault;
-    IERC20 yToken;
+    // IVault yVault;
+    // IERC20 yToken;
 
     mapping(address => uint256) public lastPulse;
 
@@ -27,8 +27,9 @@ contract NotGonnaMakeIt is Ownable, ReentrancyGuard, ERC721("NGMI FUDN", "NGMI")
         address issuer;
         address erc20;
         address[] beneficiaries;
-        uint256[] piePieces; // must total 100
+        uint256[] piePieces;
         uint256 takePulseInterval;
+        uint256 baseValue;
     }
 
     constructor(address yearnRegistry) {
@@ -47,12 +48,32 @@ contract NotGonnaMakeIt is Ownable, ReentrancyGuard, ERC721("NGMI FUDN", "NGMI")
 
     /// function destroy
 
-    /// function create / update
+    /// @dev thesis: yield same for all since continously harvested. early dissadvantage?
+    function setWill(address _token, address[] memory _beneficiaries, uint256[] memory _piePieces, uint256 _tokenAmount, uint256 _pulseInterval) external nonReentrant returns (bool) {
+        require(_beneficiaries.length == _piePieces.length && ( _beneficiaries.length + _piePieces.length > 1) );
+        require(_tokenAmount > 0);
+        address v = tokenHasVault(_token);
+        require(v != address(0));
+        if(IERC20(_token).allowance(address(this),v) < _tokenAmount) IERC20(_token).approve(v, type(uint256).max-1 );
 
-    function setWill(address _token, address[] memory _beneficiaries, uint256[] memory _piePieces) external returns (bool) {
-        require(_token != address(0));
-        require(_beneficiaries.length == _piePieces.length);
+        getWillByIssuer[msg.sender].issuer = msg.sender;
+        getWillByIssuer[msg.sender].erc20 = _token;
+        getWillByIssuer[msg.sender].beneficiaries = _beneficiaries;
+        getWillByIssuer[msg.sender].piePieces = _piePieces;
+        getWillByIssuer[msg.sender].takePulseInterval = _pulseInterval;
+
+
+        require(IERC20(_token).transferFrom(msg.sender, address(this), _tokenAmount)
+, "transfer failed");
+        uint256 contractBalance = IERC20(v).balanceOf(address(this));
+        require( IVault(v).deposit(_tokenAmount) > 1, "vault deposit failed");
+        getWillByIssuer[msg.sender].baseValue += IERC20(v).balanceOf(address(this)) - contractBalance; //
+                
+        lastPulse[msg.sender] = block.timestamp;
+
+        emit WillCreated(msg.sender, _pulseInterval);
     }
+
 
     /// function flag
 
@@ -77,12 +98,12 @@ contract NotGonnaMakeIt is Ownable, ReentrancyGuard, ERC721("NGMI FUDN", "NGMI")
 
 
 /// VIEW
-    function tokenHasVault(address _buybackERC)
-        public
+    function tokenHasVault(address _t)
+        private
         view
         returns (address vault)
     {
-        try yRegistry.latestVault(_buybackERC) returns (address response) {
+        try yRegistry.latestVault(_t) returns (address response) {
             if (response != address(0)) {
                 vault = response;
             }

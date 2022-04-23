@@ -8,6 +8,7 @@ from brownie_tokens import MintableForkToken
 def DAI():
     dai_addr = "0x6B175474E89094C44Da98b954EedeAC495271d0F"
     dai_token = MintableForkToken(dai_addr)
+    dai_token._mint_for_testing(accounts[0], 1_000_000_000 * 10 ** 18)
     return dai_token
 
 
