@@ -18,10 +18,15 @@ def test_hasOwner(NGMI):
     o = NGMI.owner()
     assert o == accounts[0]
 
-def test_sets_will_deposits(DAI, NGMI):
+def test_sets_will_deposits(DAI, NGMI, yToken):
     DAI.transfer(accounts[1], 1_000 * 10 ** 18, {"from": accounts[0]})
     DAI.approve(NGMI.address, 1_000 * 10 ** 18, {"from": accounts[1]})
+    yv_before_balance = yToken.balanceOf(accounts[1])
     ngmi_response = NGMI.setWill(DAI.address,  [accounts[8], accounts[9]], [2,3],10**18, 100 * 86400, {"from": accounts[1]})
+    assert ngmi_response
+    assert yv_before_balance < yToken.balanceOf(accounts[1])
+
+
 
 def test_has_yToken():
     pytest.skip

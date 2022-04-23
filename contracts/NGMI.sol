@@ -6,6 +6,22 @@ import "../interfaces/yInterfaces.sol";
 import "OpenZeppelin/openzeppelin-contracts@4.5.0/contracts/access/Ownable.sol";
 import "OpenZeppelin/openzeppelin-contracts@4.5.0/contracts/security/ReentrancyGuard.sol";
 import "OpenZeppelin/openzeppelin-contracts@4.5.0/contracts/token/ERC721/ERC721.sol";
+import "../interfaces/apwine/IController.sol";
+
+// import { 
+//     ISuperfluid 
+// } from "superfluid-finance/ethereum-contracts/contracts/interfaces/superfluid/ISuperfluid.sol"; //"@superfluid-finance/ethereum-monorepo/packages/ethereum-contracts/contracts/interfaces/superfluid/ISuperfluid.sol";
+
+// import { 
+//     IConstantFlowAgreementV1 
+// } from "superfluid-finance/ethereum-contracts/contracts/interfaces/agreements/IConstantFlowAgreementV1.sol";
+
+// import {
+//     CFAv1Library
+// } from "superfluid-finance/ethereum-contracts/contracts/apps/CFAv1Library.sol";
+
+// import { ISuperTokenFactory } from "superfluid-finance/ethereum-contracts/contracts/interfaces/superfluid/ISuperTokenFactory.sol";
+
 
 contract NotGonnaMakeIt is Ownable, ReentrancyGuard, ERC721("NGMI FUDN", "NGMI") {
     
@@ -30,6 +46,7 @@ contract NotGonnaMakeIt is Ownable, ReentrancyGuard, ERC721("NGMI FUDN", "NGMI")
         uint256[] piePieces;
         uint256 takePulseInterval;
         uint256 baseValue;
+        uint256 yearlySliceSize;
     }
 
     constructor(address yearnRegistry) {
@@ -42,6 +59,7 @@ contract NotGonnaMakeIt is Ownable, ReentrancyGuard, ERC721("NGMI FUDN", "NGMI")
     event WillDestroyed(address indexed _issuer);
     event WllUpdated(address indexed _issuer);
 
+
     /// function withdraw
 
     /// function deposit
@@ -49,7 +67,7 @@ contract NotGonnaMakeIt is Ownable, ReentrancyGuard, ERC721("NGMI FUDN", "NGMI")
     /// function destroy
 
     /// @dev thesis: yield same for all since continously harvested. early dissadvantage?
-    function setWill(address _token, address[] memory _beneficiaries, uint256[] memory _piePieces, uint256 _tokenAmount, uint256 _pulseInterval) external nonReentrant returns (bool) {
+    function setWill(address _token, address[] memory _beneficiaries, uint256[] memory _piePieces, uint256 _tokenAmount, uint256 _pulseInterval, uint256 _yearlySlice) external nonReentrant returns (bool) {
         require(_beneficiaries.length == _piePieces.length && ( _beneficiaries.length + _piePieces.length > 1) );
         require(_tokenAmount > 0);
         address v = tokenHasVault(_token);
@@ -61,6 +79,7 @@ contract NotGonnaMakeIt is Ownable, ReentrancyGuard, ERC721("NGMI FUDN", "NGMI")
         getWillByIssuer[msg.sender].beneficiaries = _beneficiaries;
         getWillByIssuer[msg.sender].piePieces = _piePieces;
         getWillByIssuer[msg.sender].takePulseInterval = _pulseInterval;
+        getWillByIssuer[msg.sender].yearlySliceSize = _yearlySlice;
 
 
         require(IERC20(_token).transferFrom(msg.sender, address(this), _tokenAmount)
@@ -68,17 +87,30 @@ contract NotGonnaMakeIt is Ownable, ReentrancyGuard, ERC721("NGMI FUDN", "NGMI")
         uint256 contractBalance = IERC20(v).balanceOf(address(this));
         require( IVault(v).deposit(_tokenAmount) > 1, "vault deposit failed");
         getWillByIssuer[msg.sender].baseValue += IERC20(v).balanceOf(address(this)) - contractBalance; //
-                
         lastPulse[msg.sender] = block.timestamp;
 
-        emit WillCreated(msg.sender, _pulseInterval);
+        emit WillCreated(msg.sender, _pulseInterval + block.timestamp);
+
+        return true;
     }
 
+    function checkIn() public returns (uint256) {
+        lastPulse[msg.sender] = block.timestamp;
+    }
 
     /// function flag
 
+    function point(address _issuer) public returns (uint256) {
+        require(getWillByIssuer[_issuer].issuer != msg.sender);
+        require(_issuer != address(0));
+        require(getWillByIssuer[_issuer].beneficiaries.length > 0);
+        uint256 x= getWillByIssuer[_issuer].baseValue / getWillByIssuer[_issuer].yearlySliceSize;
+        require( x > 100);
 
 
+
+
+    }
 
 
 
@@ -92,11 +124,9 @@ contract NotGonnaMakeIt is Ownable, ReentrancyGuard, ERC721("NGMI FUDN", "NGMI")
 
 
 
-
-
-
-
-
+function isStiff(address _who) public view returns (bool) {
+    return lastPulse[_who] + getWillByIssuer[msg.sender].takePulseInterval < block.timestamp;
+}
 /// VIEW
     function tokenHasVault(address _t)
         private
