@@ -84,11 +84,17 @@ contract NotGonnaMakeIt is Ownable, ReentrancyGuard {
     }
 
 
-    /// @dev thesis: yield same for all since continously harvested. early dissadvantage?
+    /// @notice creates a new will
+    /// @param _beneficiaries: array of beneficiary addresses. lenght needs to match _piePieces
+    /// @param _piePieces: array of quantities to be streamed for each beneficiary 
+    /// @param _tokenAmount: initial principal token deposit amoount
+    /// @param _pulseInterval: max time allowed between self-welfare attestations
+
     function setWill(address _token, 
                     address[] memory _beneficiaries, 
                     uint256[] memory _piePieces, 
-                    uint256 _tokenAmount, uint256 _pulseInterval, 
+                    uint256 _tokenAmount, 
+                    uint256 _pulseInterval, 
                     uint256 _yearlySlice) 
                     external nonReentrant 
                     returns (bool) {
