@@ -12,20 +12,22 @@ import "../interfaces/apwine/IController.sol";
 //     ISuperfluid 
 // } from "superfluid-finance/ethereum-contracts/contracts/interfaces/superfluid/ISuperfluid.sol"; //"@superfluid-finance/ethereum-monorepo/packages/ethereum-contracts/contracts/interfaces/superfluid/ISuperfluid.sol";
 
-// import { 
-//     IConstantFlowAgreementV1 
-// } from "superfluid-finance/ethereum-contracts/contracts/interfaces/agreements/IConstantFlowAgreementV1.sol";
+import { 
+    IConstantFlowAgreementV1 
+} from "superfluid-finance/ethereum-contracts/contracts/interfaces/agreements/IConstantFlowAgreementV1.sol";
 
 // import {
 //     CFAv1Library
 // } from "superfluid-finance/ethereum-contracts/contracts/apps/CFAv1Library.sol";
 
-// import { ISuperTokenFactory } from "superfluid-finance/ethereum-contracts/contracts/interfaces/superfluid/ISuperTokenFactory.sol";
+import { ISuperTokenFactory } from "superfluid-finance/ethereum-contracts/contracts/interfaces/superfluid/ISuperTokenFactory.sol";
 
 
-contract NotGonnaMakeIt is Ownable, ReentrancyGuard, ERC721("NGMI FUDN", "NGMI") {
+contract NotGonnaMakeIt is Ownable, ReentrancyGuard {
     
     IV2Registry yRegistry;
+    ISuperTokenFactory SuperTokenFactory;
+
     // IVault yVault;
     // IERC20 yToken;
 
@@ -35,8 +37,7 @@ contract NotGonnaMakeIt is Ownable, ReentrancyGuard, ERC721("NGMI FUDN", "NGMI")
     /// @dev  storage order [ msg.sender ] [ issuer ] 
     /// @return bool
     mapping(address => mapping(address => bool)) public isBeneficiaryOf;
-    
-    mapping (address => Will) public getWillByIssuer;
+    mapping(address => Will) public getWillByIssuer;
 
     /// @notice 
     struct Will {
@@ -49,8 +50,9 @@ contract NotGonnaMakeIt is Ownable, ReentrancyGuard, ERC721("NGMI FUDN", "NGMI")
         uint256 yearlySliceSize;
     }
 
-    constructor(address yearnRegistry) {
+    constructor(address yearnRegistry, address superTF) {
         yRegistry = IV2Registry(yearnRegistry);
+        SuperTokenFactory = ISuperTokenFactory(superTF);
     }
 
     /// events
@@ -62,12 +64,34 @@ contract NotGonnaMakeIt is Ownable, ReentrancyGuard, ERC721("NGMI FUDN", "NGMI")
 
     /// function withdraw
 
-    /// function deposit
+    /// function topup
 
     /// function destroy
 
+    function getOrCreateSupertoken(address _token) private returns (address) {
+        // returns wrapped streamable supertoken address 
+    }
+
+    function startStream(Will memory will) private returns (bool) {
+        uint256 len = will.beneficiaries.length;
+        for (uint256 i; i < len; ) {
+            /// start stream for i
+            unchecked {
+                ++i;
+            }
+        }
+        return true;
+    }
+
+
     /// @dev thesis: yield same for all since continously harvested. early dissadvantage?
-    function setWill(address _token, address[] memory _beneficiaries, uint256[] memory _piePieces, uint256 _tokenAmount, uint256 _pulseInterval, uint256 _yearlySlice) external nonReentrant returns (bool) {
+    function setWill(address _token, 
+                    address[] memory _beneficiaries, 
+                    uint256[] memory _piePieces, 
+                    uint256 _tokenAmount, uint256 _pulseInterval, 
+                    uint256 _yearlySlice) 
+                    external nonReentrant 
+                    returns (bool) {
         require(_beneficiaries.length == _piePieces.length && ( _beneficiaries.length + _piePieces.length > 1) );
         require(_tokenAmount > 0);
         address v = tokenHasVault(_token);
@@ -90,7 +114,6 @@ contract NotGonnaMakeIt is Ownable, ReentrancyGuard, ERC721("NGMI FUDN", "NGMI")
         lastPulse[msg.sender] = block.timestamp;
 
         emit WillCreated(msg.sender, _pulseInterval + block.timestamp);
-
         return true;
     }
 
@@ -101,33 +124,38 @@ contract NotGonnaMakeIt is Ownable, ReentrancyGuard, ERC721("NGMI FUDN", "NGMI")
     /// function flag
 
     function point(address _issuer) public returns (uint256) {
+        require( isStiff(_issuer));
         require(getWillByIssuer[_issuer].issuer != msg.sender);
         require(_issuer != address(0));
         require(getWillByIssuer[_issuer].beneficiaries.length > 0);
         uint256 x= getWillByIssuer[_issuer].baseValue / getWillByIssuer[_issuer].yearlySliceSize;
-        require( x > 100);
+        
 
 
-
+        startStream(getWillByIssuer[_issuer]);
+        IERC20(getWillByIssuer[_issuer].erc20).transfer(msg.sender, x/100); // tip
 
     }
 
 
 
+
+    function seal() public returns (bool) {
+        return true;
+    }
+
     ////View
+
+
+/// VIEW
 
     function viewWill(address _issuer) public view returns ( Will memory w) {
         w= getWillByIssuer[_issuer];
     }
 
-
-
-
-
 function isStiff(address _who) public view returns (bool) {
     return lastPulse[_who] + getWillByIssuer[msg.sender].takePulseInterval < block.timestamp;
 }
-/// VIEW
     function tokenHasVault(address _t)
         private
         view

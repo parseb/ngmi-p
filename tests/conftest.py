@@ -11,18 +11,21 @@ def DAI():
     dai_token._mint_for_testing(accounts[0], 1_000_000_000 * 10 ** 18)
     return dai_token
 
-
+#YEARN ARBITRUM REGISTRY JFK 0x3199437193625DCcD6F9C9e98BDf93582200Eb1f
 
 # @pytest.fixture(scope="module")
 # def yReg():
 #     reg= Contract.from_etherscan("0x50c1a2eA0a861A967D9d0FFE2AE4012c2E053804")
     
 #yearn registry 0x50c1a2eA0a861A967D9d0FFE2AE4012c2E053804
+
+#supertoken factory arbitrum 0x1C21Ead77fd45C84a4c916Db7A6635D0C6FF09D6
 @pytest.fixture(scope="module")
 def NGMI():
-    n = NotGonnaMakeIt.deploy("0x50c1a2eA0a861A967D9d0FFE2AE4012c2E053804",{"from": accounts[0]})
+    n = NotGonnaMakeIt.deploy("0x3199437193625DCcD6F9C9e98BDf93582200Eb1f", "0x1C21Ead77fd45C84a4c916Db7A6635D0C6FF09D6",{"from": accounts[0]})
     return n
 
+# Contract not verified on arbitrum
 @pytest.fixture(scope="module")
 def y_reg():
     reg= Contract.from_explorer("0x50c1a2eA0a861A967D9d0FFE2AE4012c2E053804")
