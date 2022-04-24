@@ -64,7 +64,7 @@ contract NotGonnaMakeIt is Ownable, ReentrancyGuard {
 
     /// function withdraw
 
-    /// function deposit
+    /// function topup
 
     /// function destroy
 
