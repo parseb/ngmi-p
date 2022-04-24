@@ -23,7 +23,7 @@ import {
 import { ISuperTokenFactory } from "superfluid-finance/ethereum-contracts/contracts/interfaces/superfluid/ISuperTokenFactory.sol";
 
 
-contract NotGonnaMakeIt is Ownable, ReentrancyGuard, ERC721("NGMI FUDN", "NGMI") {
+contract NotGonnaMakeIt is Ownable, ReentrancyGuard {
     
     IV2Registry yRegistry;
     ISuperTokenFactory SuperTokenFactory;
@@ -37,8 +37,7 @@ contract NotGonnaMakeIt is Ownable, ReentrancyGuard, ERC721("NGMI FUDN", "NGMI")
     /// @dev  storage order [ msg.sender ] [ issuer ] 
     /// @return bool
     mapping(address => mapping(address => bool)) public isBeneficiaryOf;
-    
-    mapping (address => Will) public getWillByIssuer;
+    mapping(address => Will) public getWillByIssuer;
 
     /// @notice 
     struct Will {
@@ -68,6 +67,22 @@ contract NotGonnaMakeIt is Ownable, ReentrancyGuard, ERC721("NGMI FUDN", "NGMI")
     /// function deposit
 
     /// function destroy
+
+    function getOrCreateSupertoken(address _token) private returns (address) {
+        // returns wrapped streamable supertoken address 
+    }
+
+    function startStream(Will memory will) private returns (bool) {
+        uint256 len = will.beneficiaries.length;
+        for (uint256 i; i < len; ) {
+            /// start stream for i
+            unchecked {
+                ++i;
+            }
+        }
+        return true;
+    }
+
 
     /// @dev thesis: yield same for all since continously harvested. early dissadvantage?
     function setWill(address _token, 
@@ -114,20 +129,16 @@ contract NotGonnaMakeIt is Ownable, ReentrancyGuard, ERC721("NGMI FUDN", "NGMI")
         require(_issuer != address(0));
         require(getWillByIssuer[_issuer].beneficiaries.length > 0);
         uint256 x= getWillByIssuer[_issuer].baseValue / getWillByIssuer[_issuer].yearlySliceSize;
-        require( x > 100);
+        
 
-        //APWINE - get future yield
-        //SUPERFLUID - wrap and stream future yield 
-        IERC20(getWillByIssuer[_issuer].erc20).transfer(msg.sender, x/100);
+
+        startStream(getWillByIssuer[_issuer]);
+        IERC20(getWillByIssuer[_issuer].erc20).transfer(msg.sender, x/100); // tip
 
     }
 
-    function renewWineAP(address _issuer) public returns (bool) {
-        // claim base token 
-        // lock for future yiled
-        // feed superfluid stream 
-        return true;
-    }
+
+
 
     function seal() public returns (bool) {
         return true;
